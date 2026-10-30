@@ -3,219 +3,254 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GTA_BODXA - عالم المتاعب والسرعة</title>
+  <title>GTA BODXA: San Andreas Edition</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: #0f172a;
+      background-color: #090d16;
       color: #fff;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
     }
     h1 {
-      font-size: 2.5rem;
-      color: #a855f7;
-      text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+      font-size: 2rem;
+      color: #ea580c;
+      text-shadow: 0 0 10px rgba(234, 88, 12, 0.6);
       margin-bottom: 5px;
     }
-    p { color: #94a3b8; font-size: 0.95rem; margin-bottom: 15px; }
-    #scoreBoard {
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #38bdf8;
-    }
-    #gameCanvas {
-      background-color: #1e293b;
-      border: 4px solid #a855f7;
+    .game-container {
+      position: relative;
+      border: 4px solid #334155;
       border-radius: 12px;
-      box-shadow: 0 0 25px rgba(168, 85, 247, 0.3);
-      display: block;
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
     }
-    .controls-hint {
-      margin-top: 15px;
+    canvas {
+      display: block;
+      background-color: #1e293b;
+      border-radius: 8px;
+    }
+    /* واجهة سان أندرياس (HUD) */
+    .hud {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      text-align: right;
+      pointer-events: none;
+    }
+    .money {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #22c55e;
+      text-shadow: 2px 2px 0px #000;
+      font-family: monospace;
+    }
+    .health-bar-bg {
+      width: 140px;
+      height: 14px;
+      background: #450a0a;
+      border: 2px solid #000;
+      margin-top: 5px;
+      border-radius: 3px;
+    }
+    .health-bar-fill {
+      width: 100%;
+      height: 100%;
+      background: #22c55e;
+    }
+    .controls-info {
+      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px 20px;
+      border-radius: 20px;
       font-size: 0.85rem;
       color: #cbd5e1;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 8px 16px;
-      border-radius: 20px;
+      text-align: center;
     }
-    .btn {
-      margin-top: 15px;
-      padding: 10px 25px;
-      font-size: 1rem;
-      font-weight: bold;
-      background: linear-gradient(135deg, #a855f7, #6366f1);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .btn:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
 
-  <h1>🚗 GTA_BODXA 🏎️</h1>
-  <p>قد سيارتك في شوارع BODXA وتفادَ العوائق والسيارات الأخرى!</p>
-  <div id="scoreBoard">النقاط: <span id="score">0</span></div>
+  <h1>🌴 GTA BODXA: SAN ANDREAS 🌴</h1>
 
-  <canvas id="gameCanvas" width="350" height="500"></canvas>
-
-  <div class="controls-hint">
-    🎮 التحكم: استخدم **الأسهم (يمين / شمال)** في الكيبورد للتحرك.
+  <div class="game-container">
+    <canvas id="gameCanvas" width="700" height="450"></canvas>
+    
+    <!-- واجهة النتيجة والصحة -->
+    <div class="hud">
+      <div class="money" id="money">$00000500</div>
+      <div class="health-bar-bg">
+        <div class="health-bar-fill" id="healthFill"></div>
+      </div>
+    </div>
   </div>
 
-  <button class="btn" onclick="resetGame()">إعادة التشغيل 🔄</button>
+  <div class="controls-info">
+    🎮 **التحكم:** الأسهم (أو W, A, S, D) للمشي/القيادة | **اضغط `E`** لركوب/النزول من العربية لما تقرب منها!
+  </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const scoreElement = document.getElementById('score');
 
-    let score = 0;
-    let gameOver = false;
+    // حالة اللعبة
+    let money = 500;
+    let inCar = false;
+    let currentCar = null;
 
-    // سيارة اللاعب
+    // اللاعب (CJ Style)
     const player = {
-      x: 150,
-      y: 400,
-      width: 40,
-      height: 70,
-      speed: 5,
-      color: '#a855f7'
+      x: 350,
+      y: 225,
+      size: 12,
+      speed: 3,
+      color: '#f97316'
     };
 
-    // العقبات (سيارات المنافسين)
-    let obstacles = [];
-    let frameCount = 0;
+    // السيارات في الخريطة
+    const cars = [
+      { id: 1, x: 200, y: 150, w: 50, h: 26, color: '#ef4444', angle: 0 },
+      { id: 2, x: 500, y: 300, w: 50, h: 26, color: '#3b82f6', angle: 0 },
+      { id: 3, x: 120, y: 350, w: 50, h: 26, color: '#eab308', angle: 0 }
+    ];
 
-    // استماع للوحة المفاتيح
-    let keys = {};
-    window.addEventListener('keydown', e => keys[e.key] = true);
-    window.addEventListener('keyup', e => keys[e.key] = false);
+    // المباني/العوائق
+    const buildings = [
+      { x: 50, y: 50, w: 100, h: 80, label: 'BODXA SHOP' },
+      { x: 550, y: 50, w: 100, h: 100, label: 'SAFEHOUSE' },
+      { x: 300, y: 320, w: 120, h: 80, label: 'GARAGE' }
+    ];
 
-    function spawnObstacle() {
-      const lanes = [30, 110, 190, 270];
-      const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
-      obstacles.push({
-        x: randomLane,
-        y: -80,
-        width: 40,
-        height: 70,
-        speed: 3 + Math.floor(score / 50) // تزداد السرعة مع زيادة النقاط
-      });
+    // مفاتيح التحكم
+    const keys = {};
+    window.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      
+      // زر ركوب / الخروج من السيارة (E)
+      if (e.key.toLowerCase() === 'e') {
+        toggleCar();
+      }
+    });
+    window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+    function toggleCar() {
+      if (inCar) {
+        // الخروج من السيارة
+        inCar = false;
+        player.x = currentCar.x - 20;
+        player.y = currentCar.y;
+        currentCar = null;
+      } else {
+        // البحث عن أقرب سيارة لركوبها
+        cars.forEach(car => {
+          let dist = Math.hypot(player.x - car.x, player.y - car.y);
+          if (dist < 45) {
+            inCar = true;
+            currentCar = car;
+          }
+        });
+      }
     }
 
     function update() {
-      if (gameOver) return;
+      let speed = inCar ? 6 : player.speed;
 
-      // تحريك اللاعب
-      if ((keys['ArrowRight'] || keys['d']) && player.x < canvas.width - player.width - 10) {
-        player.x += player.speed;
+      let dx = 0, dy = 0;
+      if (keys['arrowup'] || keys['w']) dy -= speed;
+      if (keys['arrowdown'] || keys['s']) dy += speed;
+      if (keys['arrowleft'] || keys['a']) dx -= speed;
+      if (keys['arrowright'] || keys['d']) dx += speed;
+
+      if (inCar && currentCar) {
+        currentCar.x += dx;
+        currentCar.y += dy;
+        // الحدود
+        currentCar.x = Math.max(20, Math.min(canvas.width - 20, currentCar.x));
+        currentCar.y = Math.max(20, Math.min(canvas.height - 20, currentCar.y));
+        player.x = currentCar.x;
+        player.y = currentCar.y;
+      } else {
+        player.x += dx;
+        player.y += dy;
+        player.x = Math.max(10, Math.min(canvas.width - 10, player.x));
+        player.y = Math.max(10, Math.min(canvas.height - 10, player.y));
       }
-      if ((keys['ArrowLeft'] || keys['a']) && player.x > 10) {
-        player.x -= player.speed;
-      }
-
-      // توليد السيارات المارة
-      frameCount++;
-      if (frameCount % 60 === 0) {
-        spawnObstacle();
-      }
-
-      // تحريك وتحديث العقبات
-      for (let i = 0; i < obstacles.length; i++) {
-        let obs = obstacles[i];
-        obs.y += obs.speed;
-
-        // كشف التصادم
-        if (
-          player.x < obs.x + obs.width &&
-          player.x + player.width > obs.x &&
-          player.y < obs.y + obs.height &&
-          player.y + player.height > obs.y
-        ) {
-          gameOver = true;
-          alert('💥 تحطمت السيارة! النتيجة النهائية: ' + score);
-        }
-
-        // زيادة النقاط عند تفادي السيارة
-        if (obs.y > canvas.height) {
-          obstacles.splice(i, 1);
-          score += 10;
-          scoreElement.innerText = score;
-          i--;
-        }
-      }
-    }
-
-    function drawCar(x, y, color) {
-      // جسم السيارة
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y, 40, 70);
-
-      // الزجاج الأمامي
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillRect(x + 5, y + 15, 30, 15);
-
-      // العجلات
-      ctx.fillStyle = '#000';
-      ctx.fillRect(x - 3, y + 10, 5, 15);
-      ctx.fillRect(x + 38, y + 10, 5, 15);
-      ctx.fillRect(x - 3, y + 45, 5, 15);
-      ctx.fillRect(x + 38, y + 45, 5, 15);
     }
 
     function draw() {
-      // تنظيف الشاشة
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // رسم الطريق
-      ctx.fillStyle = '#334155';
+      // 1. أرضية المدينة (أسفلت وعشب)
+      ctx.fillStyle = '#15803d'; // عشب
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // خطوط الطريق المتصلة
+      // طرق تقاطع (Roads)
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(180, 0, 80, canvas.height); // طريق طولي
+      ctx.fillRect(0, 200, canvas.width, 70);  // طريق عرضي
+
+      // خطوط الطريق
       ctx.strokeStyle = '#f8fafc';
-      ctx.setLineDash([20, 20]);
+      ctx.setLineDash([15, 15]);
       ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 0);
-      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.moveTo(220, 0); ctx.lineTo(220, canvas.height);
+      ctx.moveTo(0, 235); ctx.lineTo(canvas.width, 235);
       ctx.stroke();
+      ctx.setLineDash([]);
 
-      // رسم سيارة اللاعب
-      drawCar(player.x, player.y, player.color);
+      // 2. رسم المباني
+      buildings.forEach(b => {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.strokeStyle = '#ea580c';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
 
-      // رسم السيارات العقبات
-      obstacles.forEach(obs => {
-        drawCar(obs.x, obs.y, '#ef4444');
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '10px sans-serif';
+        ctx.fillText(b.label, b.x + 10, b.y + 20);
       });
+
+      // 3. رسم السيارات
+      cars.forEach(car => {
+        ctx.fillStyle = car.color;
+        ctx.fillRect(car.x - car.w/2, car.y - car.h/2, car.w, car.h);
+
+        // زجاج السيارة
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(car.x - 5, car.y - car.h/2 + 4, 15, car.h - 8);
+
+        // إشارة الركوب القريب
+        if (!inCar) {
+          let dist = Math.hypot(player.x - car.x, player.y - car.y);
+          if (dist < 45) {
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.fillText('اضغط E للركوب', car.x - 30, car.y - 20);
+          }
+        }
+      });
+
+      // 4. رسم شخصية اللاعب (لو مش جوه عربية)
+      if (!inCar) {
+        ctx.fillStyle = player.color;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
     }
 
     function gameLoop() {
       update();
       draw();
-      if (!gameOver) {
-        requestAnimationFrame(gameLoop);
-      }
+      requestAnimationFrame(gameLoop);
     }
 
-    function resetGame() {
-      score = 0;
-      scoreElement.innerText = score;
-      player.x = 150;
-      obstacles = [];
-      gameOver = false;
-      gameLoop();
-    }
-
-    // بدء اللعبة
     gameLoop();
   </script>
 </body>
