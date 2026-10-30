@@ -1,0 +1,25 @@
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    // سرعة حركة الشخصية
+    public float moveSpeed = 5f;
+
+    // سرعة دوران الشخصية عند الاتجاه
+    public float turnSpeed = 100f;
+
+    void Update()
+    {
+        // قراءة المدخلات من أزرار الأسهم (أو أزرار WASD)
+        float moveInput = Input.GetAxis("Vertical");   // السهم العلوي والسفلي (للأمام وللخلف)
+        float turnInput = Input.GetAxis("Horizontal"); // السهم الأيمن والأيسر (للدوران)
+
+        // تحريك الشخصية للأمام وللخلف
+        Vector3 moveDirection = transform.forward * moveInput * moveSpeed * Time.deltaTime;
+        transform.Translate(moveDirection, Space.World);
+
+        // تدوير الشخصية مع الاتجاهات
+        float turnAmount = turnInput * turnSpeed * Time.deltaTime;
+        transform.Rotate(0f, turnAmount, 0f);
+    }
+}
