@@ -252,15 +252,17 @@
     let inCar = false;
     let activeCar = null;
     let isPhoneOpen = false;
-    let speed = 0, angle = 0;
+    let angle = 0;
     const keys = {};
 
     window.addEventListener('keydown', e => {
       const k = e.key.toLowerCase();
+      const code = e.code;
       keys[k] = true;
+      keys[code] = true;
 
       // زر T: فتح وإغلاق التليفون
-      if (k === 't') {
+      if (k === 't' || code === 'KeyT') {
         isPhoneOpen = !isPhoneOpen;
         const phone = document.getElementById('phone');
         if (isPhoneOpen) {
@@ -273,7 +275,7 @@
       }
 
       // زر E: ركوب والنزول من السيارة
-      if (k === 'e') {
+      if (k === 'e' || code === 'KeyE') {
         if (inCar) {
           // النزول من السيارة
           inCar = false;
@@ -296,17 +298,22 @@
       }
     });
 
-    window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+    window.addEventListener('keyup', e => {
+      const k = e.key.toLowerCase();
+      const code = e.code;
+      keys[k] = false;
+      keys[code] = false;
+    });
 
     // تحديث الحركة والفيزياء
     function updatePhysics() {
       const moveSpeed = inCar ? 0.6 : 0.2;
 
       let forward = 0, turn = 0;
-      if (keys['arrowup'] || keys['w']) forward = moveSpeed;
-      if (keys['arrowdown'] || keys['s']) forward = -moveSpeed / 2;
-      if (keys['arrowleft'] || keys['a']) turn = 0.04;
-      if (keys['arrowright'] || keys['d']) turn = -0.04;
+      if (keys['arrowup'] || keys['w'] || keys['KeyW']) forward = moveSpeed;
+      if (keys['arrowdown'] || keys['s'] || keys['KeyS']) forward = -moveSpeed / 2;
+      if (keys['arrowleft'] || keys['a'] || keys['KeyA']) turn = 0.04;
+      if (keys['arrowright'] || keys['d'] || keys['KeyD']) turn = -0.04;
 
       if (inCar && activeCar) {
         // حركة القيادة بالسيارة
