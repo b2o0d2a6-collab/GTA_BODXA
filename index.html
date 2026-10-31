@@ -3,363 +3,678 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GTA BODXA: San Andreas 3D</title>
+  <title>Gran Turismo Sport 7: Next-Gen F1 Edition</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
+    body, html {
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      background-color: #000;
+      background-color: #020617;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    
-    /* واجهة اللعبة (HUD) */
-    #ui {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      color: #fff;
-      text-align: right;
-      z-index: 10;
-      pointer-events: none;
-    }
-    h1 {
-      font-size: 1.8rem;
-      color: #eab308;
-      text-shadow: 2px 2px 4px #000;
-    }
-    .hud-status {
-      font-size: 1rem;
-      color: #22c55e;
-      font-weight: bold;
-      margin-top: 5px;
-    }
 
-    /* تعليمات التحكم */
-    .controls-hint {
+    /* الشاشة الرئيسية (Main Menu) */
+    #mainMenu {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.75);
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      border: 1px solid #eab308;
-      z-index: 10;
-      line-height: 1.6;
-    }
-
-    /* هاتف BODXA المحمول (زر T) */
-    #phone {
-      position: absolute;
-      bottom: -400px; /* مخفي أسفل الشاشة */
-      left: 30px;
-      width: 200px;
-      height: 380px;
-      background: #0f172a;
-      border: 4px solid #38bdf8;
-      border-radius: 30px;
-      box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
-      transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 100;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #0f172a, #020617);
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 15px;
-      color: white;
+      justify-content: center;
+      z-index: 1000;
+      color: #fff;
     }
-    #phone.active {
-      bottom: 20px; /* يظهر عند الضغط على T */
+    #mainMenu h1 {
+      font-size: 3.5rem;
+      color: #f8fafc;
+      margin-bottom: 40px;
+      text-shadow: 0 0 25px rgba(220, 38, 38, 0.8);
+      letter-spacing: 2px;
     }
-    .phone-notch {
-      width: 60px;
-      height: 8px;
-      background: #334155;
-      border-radius: 10px;
-      margin-bottom: 15px;
+    .menu-btn {
+      background: #1e293b;
+      color: #fff;
+      border: 2px solid #334155;
+      padding: 15px 40px;
+      font-size: 1.3rem;
+      border-radius: 12px;
+      margin: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 280px;
+      text-align: center;
+      font-weight: bold;
     }
-    .phone-screen {
+    .menu-btn:hover {
+      background: #dc2626;
+      border-color: #ef4444;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(220, 38, 38, 0.4);
+    }
+
+    /* شاشة اختيار الألوان والطقس والمعاينة */
+    #colorSelectScreen {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #05070d;
+      display: none;
+      z-index: 900;
+      color: #fff;
+    }
+    .color-layout {
+      display: flex;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, #1e1b4b, #311042);
-      border-radius: 18px;
-      padding: 15px;
-      text-align: center;
+    }
+    .color-sidebar {
+      width: 35%;
+      background: rgba(15, 23, 42, 0.95);
+      padding: 30px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      border-left: 3px solid #334155;
+      z-index: 10;
     }
-    .phone-time {
+    .color-sidebar h2 {
+      font-size: 1.8rem;
+      color: #dc2626;
+    }
+
+    /* خيارات الطقس والوقت من فوق */
+    .env-selectors {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .env-btn {
+      background: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 10px 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .env-btn:hover { border-color: #ef4444; }
+    .env-btn.disabled::after {
+      content: "❌";
+      position: absolute;
+      font-size: 1.5rem;
+    }
+    .env-btn svg { width: 32px; height: 32px; fill: #fff; }
+
+    .color-palette {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .color-box {
+      width: 55px;
+      height: 55px;
+      border-radius: 12px;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: transform 0.2s;
+    }
+    .color-box:hover { transform: scale(1.1); }
+
+    .preview-canvas-container {
+      width: 65%;
+      height: 100%;
+      position: absolute;
+      right: 0; top: 0;
+    }
+
+    /* واجهة اللعب داخل الماتش (HUD) */
+    #gameUI {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      display: none;
+      z-index: 100;
+    }
+    .hud-panel {
+      position: absolute;
+      bottom: 25px;
+      right: 25px;
+      background: rgba(10, 15, 30, 0.85);
+      padding: 20px;
+      border-radius: 14px;
+      border-right: 5px solid #dc2626;
+      width: 220px;
+      color: #fff;
+    }
+    .rank-panel {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      background: rgba(10, 15, 30, 0.85);
+      padding: 15px 25px;
+      border-radius: 14px;
+      border-left: 5px solid #22c55e;
       font-size: 1.5rem;
       font-weight: bold;
-      color: #38bdf8;
+      color: #fff;
     }
-    .phone-app {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      margin-top: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+    .gauge-title { font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; font-weight: bold; }
+    .speedometer { font-size: 1.8rem; font-weight: bold; color: #f8fafc; font-family: monospace; margin-bottom: 10px; }
+    .bar-container { width: 100%; background: #1e293b; height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); }
+    .bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #16a34a, #eab308); }
+    .boost-fill { background: linear-gradient(90deg, #38bdf8, #6366f1); }
+
+    /* تقسيم الشاشة للاعبين */
+    .split-screen {
+      display: none;
+      width: 100%; height: 100%;
+      position: absolute; top: 0; left: 0;
+    }
+    .view-port {
+      width: 50%; height: 100%;
+      position: absolute; top: 0;
+      border-left: 2px solid #334155;
+    }
+    .view-left { left: 0; }
+    .view-right { right: 0; }
+
+    /* لافتة اسم اللاعب في أعلى المنتصف */
+    .player-tag {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(220, 38, 38, 0.9);
+      color: #fff;
+      padding: 8px 30px;
+      border-radius: 20px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      box-shadow: 0 0 15px rgba(220, 38, 38, 0.6);
+      z-index: 150;
     }
   </style>
-  <!-- مكتبة Three.js للرسوم ثلاثية الأبعاد -->
+  <!-- مكتبة Three.js ثلاثية الأبعاد -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-  <div id="ui">
-    <h1>🌴 GTA BODXA: SAN ANDREAS</h1>
-    <div class="hud-status" id="playerStatus">الشخصية: بودا (BOUDA)</div>
+  <!-- القائمة الرئيسية -->
+  <div id="mainMenu">
+    <h1>GT SPORT 7: NEXT-GEN F1</h1>
+    <button class="menu-btn" onclick="startGameMode(1)">سنجل بلاير (Single Player)</button>
+    <button class="menu-btn" onclick="startGameMode(2)">دابل بلاير (2 Players)</button>
+    <button class="menu-btn" onclick="exitGame()" style="border-color: #dc2626; color: #ef4444;">خروج (Exit)</button>
   </div>
 
-  <div class="controls-hint">
-    🎮 <b>التحكم:</b> الأسهم / WASD للمشي والقيادة<br>
-    🚗 <b>زر E:</b> ركوب / الخروج من السيارة<br>
-    📱 <b>زر T:</b> فتح / إغلاق الهاتف الذكي
+  <!-- شاشة اختيار الألوان والطقس -->
+  <div id="colorSelectScreen">
+    <div class="color-layout">
+      <div class="preview-canvas-container" id="previewContainer"></div>
+      <div class="color-sidebar">
+        <div>
+          <h2 id="playerSelectTitle">إعدادات اللعبة وسيارتك</h2>
+          <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">اختر طقس الحلبة ولون السيارة:</p>
+          
+          <!-- أزرار اختيار الطقس والوقت من فوق -->
+          <div class="env-selectors">
+            <!-- زر المطر (سحابة ونقط مية) -->
+            <div class="env-btn" id="rainBtn" title="مطر / بدون مطر" onclick="toggleRain()">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM9 14v3m3-4v4m3-3v3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <!-- زر الوقت (شمس / ليل) -->
+            <div class="env-btn" id="sunBtn" title="شمس (نهار) / قمر (ليل)" onclick="toggleSun()">
+              <svg id="sunIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="#facc15"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" stroke="#facc15" stroke-width="2"/></svg>
+            </div>
+          </div>
+
+          <!-- اختيار الألوان -->
+          <div class="color-palette">
+            <div class="color-box" style="background: #dc2626;" onclick="selectColor(0xdc2626)"></div>
+            <div class="color-box" style="background: #2563eb;" onclick="selectColor(0x2563eb)"></div>
+            <div class="color-box" style="background: #eab308;" onclick="selectColor(0xeab308)"></div>
+            <div class="color-box" style="background: #16a34a;" onclick="selectColor(0x16a34a)"></div>
+            <div class="color-box" style="background: #9333ea;" onclick="selectColor(0x9333ea)"></div>
+            <div class="color-box" style="background: #111111;" onclick="selectColor(0x111111)"></div>
+            <div class="color-box" style="background: #f8fafc;" onclick="selectColor(0xf8fafc)"></div>
+            <div class="color-box" style="background: #db2777;" onclick="selectColor(0xdb2777)"></div>
+            <div class="color-box" style="background: #0284c7;" onclick="selectColor(0x0284c7)"></div>
+          </div>
+        </div>
+        <button class="menu-btn" onclick="confirmColor()" style="width: 100%;">Continue</button>
+      </div>
+    </div>
   </div>
 
-  <!-- الهاتف المحمول -->
-  <div id="phone">
-    <div class="phone-notch"></div>
-    <div class="phone-screen">
-      <div>
-        <div class="phone-time" id="phoneTime">12:00</div>
-        <p style="font-size: 0.7rem; color: #94a3b8;">BODXA OS v1.0</p>
+  <!-- واجهة اللاعب الفردي -->
+  <div id="gameUI">
+    <div class="player-tag" style="background: #2563eb;">PLAYER 1</div>
+    <div class="rank-panel" id="rankDisplay">الترتيب: 6/6</div>
+    <div class="hud-panel">
+      <div class="gauge-title">السرعة (SPEED)</div>
+      <div class="speedometer" id="speedDisplay">0 KM/H</div>
+      <div class="gauge-title">الوقود (FUEL)</div>
+      <div class="bar-container"><div class="bar-fill" id="fuelBar"></div></div>
+      <div class="gauge-title">البوست (BOOST - SPACE)</div>
+      <div class="bar-container"><div class="bar-fill boost-fill" id="boostBar"></div></div>
+    </div>
+  </div>
+
+  <!-- واجهة وضع اللاعبين (انقسام الشاشة) -->
+  <div class="split-screen" id="splitScreenUI">
+    <div class="view-port view-left" id="view1">
+      <div class="player-tag" style="background: #dc2626;">PLAYER 1</div>
+      <div class="rank-panel" style="top:70px; left:15px; font-size:1.1rem;" id="p1Rank">الترتيب: 6/6</div>
+      <div class="hud-panel" style="bottom:15px; left:15px; right:auto;">
+        <div class="gauge-title">السرعة</div>
+        <div class="speedometer" id="p1Speed">0 KM/H</div>
+        <div class="gauge-title">الوقود</div>
+        <div class="bar-container"><div class="bar-fill" id="p1Fuel"></div></div>
+        <div class="gauge-title">البوست (V)</div>
+        <div class="bar-container"><div class="bar-fill boost-fill" id="p1Boost"></div></div>
       </div>
-      <div>
-        <div class="phone-app">📱 الخريطة</div>
-        <div class="phone-app">🚗 طلب سيارة</div>
-        <div class="phone-app">⚙️ الإعدادات</div>
+    </div>
+    
+    <div class="view-port view-right" id="view2">
+      <div class="player-tag" style="background: #2563eb;">PLAYER 2</div>
+      <div class="rank-panel" style="top:70px; left:15px; font-size:1.1rem;" id="p2Rank">الترتيب: 6/6</div>
+      <div class="hud-panel" style="bottom:15px; left:15px; right:auto;">
+        <div class="gauge-title">السرعة</div>
+        <div class="speedometer" id="p2Speed">0 KM/H</div>
+        <div class="gauge-title">الوقود</div>
+        <div class="bar-container"><div class="bar-fill" id="p2Fuel"></div></div>
+        <div class="gauge-title">البوست (K)</div>
+        <div class="bar-container"><div class="bar-fill boost-fill" id="p2Boost"></div></div>
       </div>
-      <p style="font-size: 0.65rem; color: #cbd5e1;">اضغط T لإغلاق الهاتف</p>
     </div>
   </div>
 
   <script>
-    // 1. إعداد المشهد ثلاثي الأبعاد
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x38bdf8); // سماء سان أندرياس الصافية
-    scene.fog = new THREE.Fog(0x38bdf8, 30, 180);
+    let gameMode = 1; 
+    let currentStep = 1; 
+    let p1Color = 0xdc2626;
+    let p2Color = 0x2563eb;
+    let selectedColorTemp = 0xdc2626;
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    document.body.appendChild(renderer.domElement);
+    // متغيرة الطقس والوقت
+    let isRain = true;
+    let isSun = true; // true: نهار وشمس / false: ليل وقمر
 
-    // 2. الإضاءة
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
+    function toggleRain() {
+      isRain = !isRain;
+      const btn = document.getElementById('rainBtn');
+      if (isRain) btn.classList.remove('disabled');
+      else btn.classList.add('disabled');
+    }
 
-    const sunLight = new THREE.DirectionalLight(0xfffbeb, 0.9);
-    sunLight.position.set(50, 100, 50);
-    sunLight.castShadow = true;
-    scene.add(sunLight);
+    function toggleSun() {
+      isSun = !isSun;
+      const icon = document.getElementById('sunIcon');
+      if (isSun) {
+        icon.innerHTML = '<circle cx="12" cy="12" r="5" fill="#facc15"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" stroke="#facc15" stroke-width="2"/>';
+      } else {
+        // أيقونة القمر للّيل
+        icon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" fill="#38bdf8"/>';
+      }
+    }
 
-    // 3. الأرضية والشارع (الأسفلت)
-    const floorGeo = new THREE.PlaneGeometry(400, 400);
-    const floorMat = new THREE.MeshPhongMaterial({ color: 0x1e293b });
-    const floor = new THREE.Mesh(floorGeo, floorMat);
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
+    let previewScene, previewCamera, previewRenderer, previewCar;
+    function initPreview() {
+      previewScene = new THREE.Scene();
+      previewScene.background = new THREE.Color(0x05070d);
+      previewCamera = new THREE.PerspectiveCamera(45, (window.innerWidth * 0.65) / window.innerHeight, 0.1, 100);
+      previewCamera.position.set(0, 2, 5);
+      previewCamera.lookAt(0, 0, 0);
 
-    // 4. بناء شخصية "بودا" (Bouda Character)
-    const playerGroup = new THREE.Group();
+      previewRenderer = new THREE.WebGLRenderer({ antialias: true });
+      previewRenderer.setSize(window.innerWidth * 0.65, window.innerHeight);
+      document.getElementById('previewContainer').appendChild(previewRenderer.domElement);
 
-    // جسم بودا
-    const bodyGeo = new THREE.CylinderGeometry(0.5, 0.4, 1.5, 12);
-    const bodyMat = new THREE.MeshPhongMaterial({ color: 0xeab308 }); // قميص أصفر سان أندرياس
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.y = 1.25;
-    playerGroup.add(body);
+      const light = new THREE.DirectionalLight(0xffffff, 1.5);
+      light.position.set(5, 5, 5);
+      previewScene.add(light, new THREE.AmbientLight(0xffffff, 0.5));
 
-    // رأس بودا
-    const headGeo = new THREE.SphereGeometry(0.4, 16, 16);
-    const headMat = new THREE.MeshPhongMaterial({ color: 0xfdba74 }); // لون البشرة
-    const head = new THREE.Mesh(headGeo, headMat);
-    head.position.y = 2.3;
-    playerGroup.add(head);
+      previewCar = createF1CarModel(selectedColorTemp);
+      previewScene.add(previewCar);
 
-    // أرجُل بودا
-    const legGeo = new THREE.CylinderGeometry(0.18, 0.15, 1, 8);
-    const legMat = new THREE.MeshPhongMaterial({ color: 0x1e3a8a }); // بنطال جينز أزرق
-    const leg1 = new THREE.Mesh(legGeo, legMat); leg1.position.set(-0.25, 0.5, 0);
-    const leg2 = new THREE.Mesh(legGeo, legMat); leg2.position.set(0.25, 0.5, 0);
-    playerGroup.add(leg1); playerGroup.add(leg2);
+      animatePreview();
+    }
 
-    scene.add(playerGroup);
-    playerGroup.position.set(0, 0, 0);
+    function animatePreview() {
+      if (document.getElementById('colorSelectScreen').style.display === 'block') {
+        requestAnimationFrame(animatePreview);
+        previewCar.rotation.y += 0.015;
+        previewRenderer.render(previewScene, previewCamera);
+      }
+    }
 
-    // 5. إنشاء سيارات ثلاثية الأبعاد
-    function createCar(x, z, color) {
+    function selectColor(colorHex) {
+      selectedColorTemp = colorHex;
+      if (previewCar) {
+        previewScene.remove(previewCar);
+        previewCar = createF1CarModel(selectedColorTemp);
+        previewScene.add(previewCar);
+      }
+    }
+
+    function startGameMode(mode) {
+      gameMode = mode;
+      currentStep = 1;
+      document.getElementById('mainMenu').style.display = 'none';
+      document.getElementById('colorSelectScreen').style.display = 'block';
+      document.getElementById('playerSelectTitle').innerText = gameMode === 2 ? "إعدادات (اللاعب الأول - PLAYER 1)" : "إعدادات اللعبة وسيارتك";
+      initPreview();
+    }
+
+    function confirmColor() {
+      if (gameMode === 2 && currentStep === 1) {
+        p1Color = selectedColorTemp;
+        currentStep = 2;
+        document.getElementById('playerSelectTitle').innerText = "اختر لون سيارة (اللاعب الثاني - PLAYER 2)";
+      } else {
+        if (gameMode === 2) p2Color = selectedColorTemp;
+        else p1Color = selectedColorTemp;
+
+        document.getElementById('colorSelectScreen').style.display = 'none';
+        startActualGame();
+      }
+    }
+
+    function exitGame() {
+      window.location.reload();
+    }
+
+    // نموذج سيارة F1 عالي الدقة والواقعية
+    function createF1CarModel(color) {
       const car = new THREE.Group();
+      const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.9, roughness: 0.1 });
       
-      // جسم السيارة السفلي
-      const bodyG = new THREE.BoxGeometry(2.4, 0.9, 4.5);
-      const bodyM = new THREE.MeshPhongMaterial({ color: color });
-      const carB = new THREE.Mesh(bodyG, bodyM);
-      carB.position.y = 0.7;
-      car.add(carB);
+      const noseGeo = new THREE.ConeGeometry(0.4, 2.6, 16);
+      noseGeo.rotateX(Math.PI / 2);
+      car.add(new THREE.Mesh(noseGeo, bodyMat).translateZ(-1.6).translateY(0.35));
 
-      // كابينة السيارة الزجاجية
-      const topG = new THREE.BoxGeometry(2, 0.7, 2.2);
-      const topM = new THREE.MeshPhongMaterial({ color: 0x0284c7 });
-      const carT = new THREE.Mesh(topG, topM);
-      carT.position.set(0, 1.4, -0.2);
-      car.add(carT);
+      const mainBody = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.42, 2.7), bodyMat);
+      mainBody.position.set(0, 0.35, 0.3);
+      car.add(mainBody);
 
-      // الإطارات
-      const wheelG = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 12);
-      const wheelM = new THREE.MeshPhongMaterial({ color: 0x000000 });
-      wheelG.rotateZ(Math.PI / 2);
+      const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.8 }));
+      helmet.position.set(0, 0.65, 0.1);
+      car.add(helmet);
 
-      const w1 = new THREE.Mesh(wheelG, wheelM); w1.position.set(1.2, 0.4, 1.3);
-      const w2 = new THREE.Mesh(wheelG, wheelM); w2.position.set(-1.2, 0.4, 1.3);
-      const w3 = new THREE.Mesh(wheelG, wheelM); w3.position.set(1.2, 0.4, -1.3);
-      const w4 = new THREE.Mesh(wheelG, wheelM); w4.position.set(-1.2, 0.4, -1.3);
-      car.add(w1); car.add(w2); car.add(w3); car.add(w4);
+      const wingMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.8 });
+      car.add(new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.08, 0.6), wingMat).position.set(0, 0.85, 1.6));
+      car.add(new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 0.5), wingMat).position.set(0, 0.15, -2.4));
 
-      car.position.set(x, 0, z);
-      scene.add(car);
+      const tireGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.35, 24);
+      tireGeo.rotateZ(Math.PI / 2);
+      const tireMat = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.9 });
+
+      const t1 = new THREE.Mesh(tireGeo, tireMat); t1.position.set(0.95, 0.38, -1.4);
+      const t2 = new THREE.Mesh(tireGeo, tireMat); t2.position.set(-0.95, 0.38, -1.4);
+      const t3 = new THREE.Mesh(tireGeo, tireMat); t3.position.set(1.05, 0.38, 1.4);
+      const t4 = new THREE.Mesh(tireGeo, tireMat); t4.position.set(-1.05, 0.38, 1.4);
+      car.add(t1, t2, t3, t4);
+
       return car;
     }
 
-    const carsList = [
-      createCar(8, 10, 0xef4444), // سيارة حمراء
-      createCar(-12, -15, 0x2563eb)  // سيارة زرقاء
-    ];
-
-    // 6. المباني ثلاثية الأبعاد بتفاصيل قريبة لسان أندرياس
-    const buildingColors = [0xd4d4d8, 0xca8a04, 0xb91c1c, 0x475569];
-    for (let i = 0; i < 35; i++) {
-      const h = Math.random() * 20 + 10;
-      const bG = new THREE.BoxGeometry(12, h, 12);
-      const bM = new THREE.MeshPhongMaterial({ color: buildingColors[i % buildingColors.length] });
-      const building = new THREE.Mesh(bG, bM);
-
-      let x = (Math.random() - 0.5) * 280;
-      let z = (Math.random() - 0.5) * 280;
-      if (Math.abs(x) < 20) x += 30;
-      if (Math.abs(z) < 20) z += 30;
-
-      building.position.set(x, h / 2, z);
-      scene.add(building);
-    }
-
-    // 7. المنطق والتحكم بـ "بودا" والسيارات والتليفون
-    let inCar = false;
-    let activeCar = null;
-    let isPhoneOpen = false;
-    let angle = 0;
+    let scene, renderer;
+    let cameraSingle, cameraP1, cameraP2;
+    let playerCar1, playerCar2;
+    let opponents = [];
+    let itemsList = [];
+    let rainParticles;
     const keys = {};
 
-    window.addEventListener('keydown', e => {
-      const k = e.key.toLowerCase();
-      const code = e.code;
-      keys[k] = true;
-      keys[code] = true;
+    window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; keys[e.code] = true; });
+    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; keys[e.code] = false; });
 
-      // زر T: فتح وإغلاق التليفون
-      if (k === 't' || code === 'KeyT') {
-        isPhoneOpen = !isPhoneOpen;
-        const phone = document.getElementById('phone');
-        if (isPhoneOpen) {
-          phone.classList.add('active');
-          const now = new Date();
-          document.getElementById('phoneTime').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        } else {
-          phone.classList.remove('active');
+    function startActualGame() {
+      scene = new THREE.Scene();
+      
+      // ضبط لون السماء حسب نهار أم ليل
+      const bgColor = isSun ? 0x38bdf8 : 0x05070d;
+      scene.background = new THREE.Color(bgColor);
+      scene.fog = new THREE.FogExp2(bgColor, isRain ? 0.005 : 0.002);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = isSun ? 1.3 : 0.8;
+      document.body.appendChild(renderer.domElement);
+
+      scene.add(new THREE.AmbientLight(0xffffff, isSun ? 0.7 : 0.3));
+      const dirLight = new THREE.DirectionalLight(0xffffff, isSun ? 1.5 : 0.6);
+      dirLight.position.set(50, 100, 50);
+      scene.add(dirLight);
+
+      // حلبة السباق بأسفلت واقعي وانعكاسات المطر
+      const trackMat = new THREE.MeshStandardMaterial({ 
+        color: 0x111318, 
+        roughness: isRain ? 0.2 : 0.8, // أسفلت مبلول بيعكس في المطر
+        metalness: isRain ? 0.5 : 0.1 
+      });
+      const track = new THREE.Mesh(new THREE.PlaneGeometry(60, 6000), trackMat);
+      track.rotation.x = -Math.PI / 2;
+      scene.add(track);
+
+      // إضافة المطر لو مفعل
+      if (isRain) {
+        const rainGeo = new THREE.BufferGeometry();
+        const rainCount = 4000;
+        const posArray = new Float32Array(rainCount * 3);
+        for (let i = 0; i < rainCount * 3; i += 3) {
+          posArray[i] = (Math.random() - 0.5) * 100;
+          posArray[i + 1] = Math.random() * 40;
+          posArray[i + 2] = (Math.random() - 0.5) * 500;
         }
+        rainGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const rainMat = new THREE.PointsMaterial({ color: 0x38bdf8, size: 0.15, transparent: true, opacity: 0.6 });
+        rainParticles = new THREE.Points(rainGeo, rainMat);
+        scene.add(rainParticles);
       }
 
-      // زر E: ركوب والنزول من السيارة
-      if (k === 'e' || code === 'KeyE') {
-        if (inCar) {
-          // النزول من السيارة
-          inCar = false;
-          playerGroup.visible = true;
-          playerGroup.position.set(activeCar.position.x + 3, 0, activeCar.position.z);
-          activeCar = null;
-          document.getElementById('playerStatus').innerText = "الشخصية: بودا (ترجل من السيارة)";
-        } else {
-          // البحث عن أقرب سيارة لركوبها
-          carsList.forEach(car => {
-            const dist = playerGroup.position.distanceTo(car.position);
-            if (dist < 5) {
-              inCar = true;
-              activeCar = car;
-              playerGroup.visible = false;
-              document.getElementById('playerStatus').innerText = "الشخصية: بودا (يقود السيارة 🚗)";
-            }
-          });
-        }
+      // حواجز الحلبة
+      for (let i = -3000; i < 3000; i += 50) {
+        const bMat = new THREE.MeshStandardMaterial({ color: (i/50)%2===0 ? 0xdc2626 : 0xf8fafc });
+        scene.add(new THREE.Mesh(new THREE.BoxGeometry(2, 2, 40), bMat).position.set(-31, 1, i));
+        scene.add(new THREE.Mesh(new THREE.BoxGeometry(2, 2, 40), bMat).position.set(31, 1, i));
       }
-    });
 
-    window.addEventListener('keyup', e => {
-      const k = e.key.toLowerCase();
-      const code = e.code;
-      keys[k] = false;
-      keys[code] = false;
-    });
+      playerCar1 = {
+        mesh: createF1CarModel(p1Color),
+        speed: 0, maxSpeed: 2.6, angle: 0, fuel: 100, boost: 100,
+        x: gameMode === 2 ? -3 : 0, z: 0
+      };
+      scene.add(playerCar1.mesh);
 
-    // تحديث الحركة والفيزياء
-    function updatePhysics() {
-      const moveSpeed = inCar ? 0.6 : 0.2;
-
-      let forward = 0, turn = 0;
-      if (keys['arrowup'] || keys['w'] || keys['KeyW']) forward = moveSpeed;
-      if (keys['arrowdown'] || keys['s'] || keys['KeyS']) forward = -moveSpeed / 2;
-      if (keys['arrowleft'] || keys['a'] || keys['KeyA']) turn = 0.04;
-      if (keys['arrowright'] || keys['d'] || keys['KeyD']) turn = -0.04;
-
-      if (inCar && activeCar) {
-        // حركة القيادة بالسيارة
-        angle += turn;
-        activeCar.rotation.y = angle;
-        activeCar.position.x += Math.sin(angle) * forward;
-        activeCar.position.z += Math.cos(angle) * forward;
-
-        // كاميرا القيادة
-        camera.position.set(
-          activeCar.position.x - Math.sin(angle) * 12,
-          activeCar.position.y + 6,
-          activeCar.position.z - Math.cos(angle) * 12
-        );
-        camera.lookAt(activeCar.position);
+      if (gameMode === 2) {
+        playerCar2 = {
+          mesh: createF1CarModel(p2Color),
+          speed: 0, maxSpeed: 2.6, angle: 0, fuel: 100, boost: 100,
+          x: 3, z: 0
+        };
+        scene.add(playerCar2.mesh);
+        document.getElementById('splitScreenUI').style.display = 'block';
+        cameraP1 = new THREE.PerspectiveCamera(60, (window.innerWidth / 2) / window.innerHeight, 0.1, 1000);
+        cameraP2 = new THREE.PerspectiveCamera(60, (window.innerWidth / 2) / window.innerHeight, 0.1, 1000);
       } else {
-        // حركة مشي "بودا"
-        angle += turn;
-        playerGroup.rotation.y = angle;
-        playerGroup.position.x += Math.sin(angle) * forward;
-        playerGroup.position.z += Math.cos(angle) * forward;
-
-        // كاميرا تتبع بودا
-        camera.position.set(
-          playerGroup.position.x - Math.sin(angle) * 8,
-          playerGroup.position.y + 4,
-          playerGroup.position.z - Math.cos(angle) * 8
-        );
-        camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.5, playerGroup.position.z);
+        document.getElementById('gameUI').style.display = 'block';
+        cameraSingle = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
       }
+
+      opponents = [];
+      const oppColors = [0x2563eb, 0xeab308, 0x16a34a, 0x9333ea, 0xdb2777];
+      for (let i = 0; i < 5; i++) {
+        const oppMesh = createF1CarModel(oppColors[i]);
+        const xPos = (i - 2) * 4;
+        const zPos = -15 - (i * 10);
+        oppMesh.position.set(xPos, 0, zPos);
+        scene.add(oppMesh);
+        opponents.push({ mesh: oppMesh, speed: 1.3 + Math.random() * 0.3, z: zPos });
+      }
+
+      itemsList = [];
+      const itemGeo = new THREE.CylinderGeometry(0.4, 0.4, 1.0, 16);
+      for (let i = 0; i < 30; i++) {
+        const isBoost = i % 2 === 0;
+        const mat = new THREE.MeshStandardMaterial({ 
+          color: isBoost ? 0x38bdf8 : 0x16a34a, 
+          emissive: isBoost ? 0x0284c7 : 0x064e3b 
+        });
+        const item = new THREE.Mesh(itemGeo, mat);
+        item.position.set((Math.random() - 0.5) * 24, 0.5, -50 - (i * 90));
+        scene.add(item);
+        itemsList.push({ mesh: item, type: isBoost ? 'boost' : 'fuel', active: true });
+      }
+
+      animateGame();
     }
 
-    // 8. الحلقة الرئيسية للعبة (Game Loop)
-    function animate() {
-      requestAnimationFrame(animate);
-      updatePhysics();
-      renderer.render(scene, camera);
+    function updateCarPhysics(car, throttleUp, throttleDown, turnLeft, turnRight, boostKey) {
+      let throttle = 0;
+      let steering = 0;
+
+      if (keys[throttleUp]) throttle = 1;
+      if (keys[throttleDown]) throttle = -1;
+      if (keys[turnLeft]) steering = 1;
+      if (keys[turnRight]) steering = -1;
+      
+      let currentMax = car.maxSpeed;
+      if (keys[boostKey] && car.boost > 0) {
+        currentMax *= 1.6;
+        car.boost = Math.max(0, car.boost - 0.8);
+      } else {
+        car.boost = Math.min(100, car.boost + 0.15);
+      }
+
+      if (car.fuel > 0) {
+        if (throttle > 0) {
+          car.speed = Math.min(car.speed + 0.03, currentMax);
+          car.fuel = Math.max(0, car.fuel - 0.012);
+        } else if (throttle < 0) {
+          car.speed = Math.max(car.speed - 0.03, -currentMax / 2);
+        } else {
+          car.speed *= 0.96;
+        }
+      } else {
+        car.speed *= 0.92;
+      }
+
+      if (Math.abs(car.speed) > 0.03) {
+        car.angle += steering * 0.04 * (car.speed / car.maxSpeed);
+        car.mesh.rotation.y = car.angle;
+      }
+
+      car.x -= Math.sin(car.angle) * car.speed;
+      car.z -= Math.cos(car.angle) * car.speed;
+      car.mesh.position.set(car.x, 0, car.z);
+
+      if (car.x > 28) car.x = 28;
+      if (car.x < -28) car.x = -28;
+
+      itemsList.forEach(item => {
+        if (item.active) {
+          const itemPos = item.mesh.position;
+          const dist = Math.hypot(car.x - itemPos.x, car.z - itemPos.z);
+          if (dist < 1.8) { 
+            item.active = false;
+            item.mesh.visible = false;
+            if (item.type === 'fuel') car.fuel = Math.min(100, car.fuel + 30);
+            if (item.type === 'boost') car.boost = Math.min(100, car.boost + 40);
+          }
+        }
+      });
+    }
+
+    function animateGame() {
+      requestAnimationFrame(animateGame);
+
+      // تحريك قطرات المطر
+      if (isRain && rainParticles) {
+        const positions = rainParticles.geometry.attributes.position.array;
+        for (let i = 1; i < positions.length; i += 3) {
+          positions[i] -= 0.8;
+          if (positions[i] < 0) positions[i] = 40;
+        }
+        rainParticles.geometry.attributes.position.needsUpdate = true;
+      }
+
+      opponents.forEach(opp => {
+        opp.mesh.position.z -= opp.speed;
+      });
+
+      if (gameMode === 1) {
+        updateCarPhysics(playerCar1, 'w', 's', 'a', 'd', ' ');
+        
+        const cx = playerCar1.x + Math.sin(playerCar1.angle) * 8;
+        const cz = playerCar1.z + Math.cos(playerCar1.angle) * 8;
+        cameraSingle.position.set(cx, playerCar1.mesh.position.y + 2.8, cz);
+        cameraSingle.lookAt(playerCar1.x, playerCar1.y + 0.4, playerCar1.z - 2);
+
+        let rank = 6;
+        opponents.forEach(o => { if (playerCar1.z < o.mesh.position.z) rank--; });
+        document.getElementById('rankDisplay').innerText = `الترتيب: ${rank}/6`;
+        document.getElementById('speedDisplay').innerText = Math.floor(Math.abs(playerCar1.speed) * 180) + " KM/H";
+        document.getElementById('fuelBar').style.width = playerCar1.fuel + "%";
+        document.getElementById('boostBar').style.width = playerCar1.boost + "%";
+
+        renderer.render(scene, cameraSingle);
+
+      } else {
+        updateCarPhysics(playerCar1, 'w', 's', 'a', 'd', 'v');
+        updateCarPhysics(playerCar2, 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'k');
+
+        const cx1 = playerCar1.x + Math.sin(playerCar1.angle) * 8;
+        const cz1 = playerCar1.z + Math.cos(playerCar1.angle) * 8;
+        cameraP1.position.set(cx1, 2.8, cz1);
+        cameraP1.lookAt(playerCar1.x, 0.4, playerCar1.z - 2);
+
+        const cx2 = playerCar2.x + Math.sin(playerCar2.angle) * 8;
+        const cz2 = playerCar2.z + Math.cos(playerCar2.angle) * 8;
+        cameraP2.position.set(cx2, 2.8, cz2);
+        cameraP2.lookAt(playerCar2.x, 0.4, playerCar2.z - 2);
+
+        let r1 = 6, r2 = 6;
+        opponents.forEach(o => {
+          if (playerCar1.z < o.mesh.position.z) r1--;
+          if (playerCar2.z < o.mesh.position.z) r2--;
+        });
+
+        document.getElementById('p1Rank').innerText = `الترتيب: ${r1}/6`;
+        document.getElementById('p1Speed').innerText = Math.floor(Math.abs(playerCar1.speed) * 180) + " KM/H";
+        document.getElementById('p1Fuel').style.width = playerCar1.fuel + "%";
+        document.getElementById('p1Boost').style.width = playerCar1.boost + "%";
+
+        document.getElementById('p2Rank').innerText = `الترتيب: ${r2}/6`;
+        document.getElementById('p2Speed').innerText = Math.floor(Math.abs(playerCar2.speed) * 180) + " KM/H";
+        document.getElementById('p2Fuel').style.width = playerCar2.fuel + "%";
+        document.getElementById('p2Boost').style.width = playerCar2.boost + "%";
+
+        renderer.setViewport(0, 0, window.innerWidth / 2, window.innerHeight);
+        renderer.setScissor(0, 0, window.innerWidth / 2, window.innerHeight);
+        renderer.setScissorTest(true);
+        renderer.render(scene, cameraP1);
+
+        renderer.setViewport(window.innerWidth / 2, 0, window.innerWidth / 2, window.innerHeight);
+        renderer.setScissor(window.innerWidth / 2, 0, window.innerWidth / 2, window.innerHeight);
+        renderer.render(scene, cameraP2);
+      }
     }
 
     window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      if (renderer) {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        if (cameraSingle) { cameraSingle.aspect = window.innerWidth / window.innerHeight; cameraSingle.updateProjectionMatrix(); }
+      }
     });
-
-    animate();
   </script>
 </body>
 </html>
